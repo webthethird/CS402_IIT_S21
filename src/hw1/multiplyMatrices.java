@@ -7,7 +7,7 @@ public class multiplyMatrices {
 		// set large values for n, m, and k
 		int n = 1500;
 		int m = 1000;
-		int k = 1250;
+		int k = 500;
 		
 		// instantiate A, B
 		int[][] A = new int[n][m];
@@ -16,7 +16,6 @@ public class multiplyMatrices {
 		// populate A and B with random integers from 0-100
 		System.out.println("Generating A:");
 		for (int i = 0; i < n; i++) {
-			A[i] = new int[m];
 			for (int  j = 0; j < m; j++) {
 				A[i][j] = (int) (Math.random()*100);
 //				System.out.print("["+A[i][j]+"]");
@@ -27,7 +26,6 @@ public class multiplyMatrices {
 		System.out.println("Time to generate: "+ (aTime-startTime) + " ms");
 		System.out.println("Generating B:");
 		for (int i = 0; i < m; i++) {
-			B[i] = new int[k];
 			for (int j = 0; j < k; j++) {
 				B[i][j] = (int) (Math.random()*100);
 //				System.out.print("["+B[i][j]+"]");

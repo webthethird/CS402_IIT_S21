@@ -62,9 +62,9 @@ public class multiplyRealMatrices {
 		int k = B[0].length;
 		double[][] C = new double[n][k];
 		// Calculate matrix values using dot product - requires a loop within a loop within a loop
-		for (int i = 0; i < n; i++) {
-			C[i] = new double[k];
-			for (int j = 0; j < k; j++) {
+		// Modified for part b
+		for (int j = 0; j < k; j++) {
+			for (int i = 0; i < n; i++) {
 				double value = 0;
 				for (int h = 0; h < m; h++) {
 					value += A[i][h] * B[h][j];

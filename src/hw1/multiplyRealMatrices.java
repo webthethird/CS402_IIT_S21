@@ -7,7 +7,7 @@ public class multiplyRealMatrices {
 		// set large values for n, m, and k
 		int n = 1500;
 		int m = 1000;
-		int k = 500;
+		int k = 1250;
 		
 		// instantiate A, B
 		double[][] A = new double[n][m];

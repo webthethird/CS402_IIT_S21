@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1616642398 source:/home/webthe3rd/codeblocks-workspace/workerDB/main.c
+	<stdio.h>
+	<stdlib.h>
+	"readfile.h"
+
+1616541520 /home/webthe3rd/codeblocks-workspace/workerDB/readfile.h
+	<stdio.h>
+	<stdlib.h>
+
+1616630463 source:/home/webthe3rd/codeblocks-workspace/workerDB/readfile.c
+	<stdio.h>
+	<stdlib.h>
+

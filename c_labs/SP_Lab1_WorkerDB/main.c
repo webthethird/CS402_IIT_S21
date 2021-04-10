@@ -10,6 +10,8 @@
 #define MIN_SALARY 30000
 #define MAX_SALARY 150000
 #define N 1024
+#define SORT_ID 111
+#define SORT_SALARY 222
 
 /* Define Employee data structure */
 struct Employee
@@ -20,20 +22,26 @@ struct Employee
     int salary;
 };
 /* Declare methods defined later in this file */
-int emp_comparator(const void*, const void*);
-void sort_employees(int, struct Employee*);
+int emp_id_comparator(const void*, const void*);
+int emp_salary_comparator(const void*, const void*);
+void sort_employees(int, struct Employee*, int);
 void print_employees(struct Employee*);
 void load_employees(struct Employee*);
 int add_new_employee(struct Employee*);
 void main_menu(struct Employee*);
-void print_menu(void);
+void print_main_menu(void);
 void search_by_id(struct Employee*);
 int input_id(void);
 void search_by_name(struct Employee*);
+void print_all_by_last_name(struct Employee*);
+void print_top_salaries(struct Employee*);
 int input_last_name(char*);
 int input_first_name(char*);
 int input_salary(void);
 int input_menu_selection(void);
+int input_num(void);
+/* Declare global variable for number of Employees */
+static int nEmps;
 
 /*
  * Main:
@@ -74,7 +82,7 @@ int main(int argc, const char *argv[])
  */
 void main_menu(struct Employee *emps)
 {
-    print_menu();
+    print_main_menu();
     switch(input_menu_selection()) {
         case 1:
             print_employees(emps);
@@ -90,6 +98,12 @@ void main_menu(struct Employee *emps)
             break;
         case 5:
             return;
+        case 8:
+            print_top_salaries(emps);
+            break;
+        case 9:
+            print_all_by_last_name(emps);
+            break;
     }
     main_menu(emps);
 }
@@ -116,9 +130,9 @@ int input_menu_selection()
         printf("%s\n", " is not an integer, please try again.");
         return input_menu_selection();
     }
-    if (selection < 1 || selection > 5)
+    if (selection < 1 || selection > 9)
     {
-        printf("%s\n", "Selection must be between 1 and 5, please try again.");
+        printf("%s\n", "Selection must be between 1 and 9, please try again.");
         return input_menu_selection();
     }
     else return selection;
@@ -128,7 +142,7 @@ int input_menu_selection()
  * Print Menu:
  * Prints the main menu, and does nothing else.
  */
-void print_menu()
+void print_main_menu()
 {
     printf("\n%s\n", "Employee DB Main Menu");
     printf("%s\n", "------------------------------");
@@ -137,6 +151,10 @@ void print_menu()
     printf("%s\n", "  (3) Lookup by Last Name");
     printf("%s\n", "  (4) Add New Employee");
     printf("%s\n", "  (5) Quit");
+    printf("%s\n", "  (6) Remove an Employee");
+    printf("%s\n", "  (7) Update Employee Info");
+    printf("%s\n", "  (8) Print Top Employees by Salary");
+    printf("%s\n", "  (9) Print All by Last Name");
     printf("%s\n", "------------------------------");
 }
 
@@ -170,7 +188,8 @@ void load_employees(struct Employee *emps)
         i++;
     }
     while (ret != -1);
-    sort_employees(i, emps);
+    nEmps = i;
+    sort_employees(i, emps, SORT_ID);
 }
 
 /*
@@ -241,6 +260,7 @@ int add_new_employee(struct Employee *emps)
         }
         new_emp.id = id;
         emps[i] = new_emp;
+        nEmps++;
         return 0;
     }
     else return -1;
@@ -344,6 +364,33 @@ void search_by_name(struct Employee *emps)
     printf("%s%s\n", "Could not find employee with the last name ", name);
 }
 
+void print_all_by_last_name(struct Employee *emps)
+{
+    char name[MAX_NAME];
+    input_last_name(name);
+    int i = 0;
+    int isFound = 0;
+    while (emps[i].id != 0)
+    {
+        if (*emps[i].lastName == *name)
+        {
+            if (isFound == 0) {
+                isFound = 1;
+                printf("\n%-32s %7s          %6s\n", "NAME", "SALARY", "ID");
+                printf("%s\n", "-----------------------------------------------------------");
+            }
+            printf("%-12s%-20s $%6d          %6d\n", emps[i].firstName, emps[i].lastName, emps[i].salary, emps[i].id);
+            printf("%s\n", "-----------------------------------------------------------");
+        }
+        i++;
+    }
+    if (isFound)
+        printf("%s%s\n", "Finished printing employees with the last name ", name);
+    else
+        printf("%s%s\n", "Could not find employee with the last name ", name);
+    return;
+}
+
 /*
  * Input Last Name:
  * Prompts the user to enter a last name, and stores the input
@@ -408,6 +455,43 @@ int input_salary()
     else return salary;
 }
 
+void print_top_salaries(struct Employee *emps)
+{
+    sort_employees(nEmps, emps, SORT_SALARY);
+    int n = input_num();
+    int i;
+    printf("\n%-32s %7s          %6s\n", "NAME", "SALARY", "ID");
+    printf("%s\n", "-----------------------------------------------------------");
+    for (i = 0; i < n; i++)
+    {
+        printf("%-12s%-20s $%6d          %6d\n", emps[i].firstName, emps[i].lastName, emps[i].salary, emps[i].id);
+        printf("%s\n", "-----------------------------------------------------------");
+    }
+    sort_employees(nEmps, emps, SORT_ID);
+}
+
+int input_num()
+{
+    int num;
+    printf("%s", "Enter the number of highest-paid employees to display: ");
+    if (scanf("%d", &num) != 1)
+    {
+        printf("%s\n", "Input not recognized as an integer, please try again.");
+        return input_num();
+    }
+    else if (num <= 0)
+    {
+        printf("%s\n", "Input must be greater than zero, please try again.");
+        return input_num();
+    }
+    else if (num > nEmps)
+    {
+        printf("%s\n", "Input is greater than the number of employees, please try again.");
+        return input_num();
+    }
+    else return num;
+}
+
 /*
  * Sort Employees:
  * Called once by load_employees() once it has populated
@@ -417,15 +501,21 @@ int input_salary()
  *
  * n - the number of Employee structs in the array
  * emps - pointer to the array of Employee structs
+ * compareCode - int constant, either SORT_ID or SORT_SALARY
  */
-void sort_employees(int n, struct Employee *emps)
+void sort_employees(int n, struct Employee *emps, int compareCode)
 {
-    qsort(emps, n, sizeof(struct Employee), emp_comparator);
+    if (compareCode == SORT_ID) {
+        qsort(emps, n, sizeof(struct Employee), emp_id_comparator);
+    }
+    else if (compareCode == SORT_SALARY) {
+        qsort(emps, n, sizeof(struct Employee), emp_salary_comparator);
+    }
     return;
 }
 
 /*
- * Employee Comparator:
+ * Employee ID Comparator:
  * Used by qsort() in sort_employees() to be used when
  * comparing any two Employee structs according to ID.
  *
@@ -435,13 +525,36 @@ void sort_employees(int n, struct Employee *emps)
  *          1 if emp[1].id > emp[2].id
  *          0 otherwise
  */
-int emp_comparator(const void *v1, const void *v2)
+int emp_id_comparator(const void *v1, const void *v2)
 {
     const struct Employee *p1 = v1;
     const struct Employee *p2 = v2;
     if (p1->id < p2->id)
         return -1;
     else if (p1->id > p2->id)
+        return +1;
+    else
+        return 0;
+}
+
+/*
+ * Employee Salary Comparator:
+ * Used by qsort() in sort_employees() to be used when
+ * comparing any two Employee structs according to salary.
+ *
+ * v1, v2 - generic arguments required for any comparator
+ *          function intended to be used by qsort()
+ * returns -1 if emp[1].salary < emp[2].salary
+ *          1 if emp[1].salary > emp[2].salary
+ *          0 otherwise
+ */
+int emp_salary_comparator(const void *v1, const void *v2)
+{
+    const struct Employee *p1 = v1;
+    const struct Employee *p2 = v2;
+    if (p1->salary > p2->salary)
+        return -1;
+    else if (p1->salary < p2->salary)
         return +1;
     else
         return 0;

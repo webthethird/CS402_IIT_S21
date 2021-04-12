@@ -41,13 +41,15 @@ void print_top_salaries(struct Employee*);
 int input_last_name(char*);
 int input_first_name(char*);
 int input_salary(void);
-int input_menu_selection(void);
+int input_menu_selection(int);
 int input_num(void);
+
 /* Declare global variable for number of Employees */
 static int nEmps;
 
 /*
  * Main:
+ *
  * Attempts to open the file using the filename
  * passed in as an argument, by calling the open_file
  * method in readfile.c
@@ -77,6 +79,7 @@ int main(int argc, const char *argv[])
 
 /*
  * Main Menu:
+ *
  * Handles routing main menu selections to the appropriate
  * subroutine, then returning to the menu.
  *
@@ -86,7 +89,7 @@ int main(int argc, const char *argv[])
 void main_menu(struct Employee *emps)
 {
 	print_main_menu();
-	switch(input_menu_selection()) {
+	switch(input_menu_selection(9)) {
 	case 1:
 		print_employees(emps);
 		break;
@@ -116,15 +119,17 @@ void main_menu(struct Employee *emps)
 
 /*
  * Input Menu Selection:
+ *
  * Called by main_menu() after the menu is displayed.
  * Prompts the user to enter a selection from the menu,
  * and validates the input, first to make sure that it is
- * an integer, then to check that it is between 1 and 5.
+ * an integer, then to check that it's between 1 and a given max.
  * Prompts the user to try again if either check fails.
  *
- * returns an integer between 1 and 5
+ * max - the maximum integer to accept
+ * returns an integer between 1 and max
  */
-int input_menu_selection()
+int input_menu_selection(int max)
 {
 	int selection;
 	char ch;
@@ -134,18 +139,19 @@ int input_menu_selection()
 		while ((ch = getchar()) != '\n')
 			putchar(ch);
 		printf("%s\n", " is not an integer, please try again.");
-		return input_menu_selection();
+		return input_menu_selection(max);
 	}
-	if (selection < 1 || selection > 9)
+	if (selection < 1 || selection > max)
 	{
-		printf("%s\n", "Selection must be between 1 and 9, please try again.");
-		return input_menu_selection();
+		printf("%s%d%s\n", "Selection must be between 1 and ", max, ", please try again.");
+		return input_menu_selection(max);
 	}
 	else return selection;
 }
 
 /*
  * Print Menu:
+ *
  * Prints the main menu, and does nothing else.
  */
 void print_main_menu()
@@ -166,6 +172,7 @@ void print_main_menu()
 
 /*
  * Load Employees:
+ *
  * Uses the methods read_int() and read_string() from
  * the library readfile.c to read data from the input
  * file and populate emps array with Employee structs.
@@ -199,6 +206,7 @@ void load_employees(struct Employee *emps)
 
 /*
  * Print Employees:
+ *
  * Called by main_menu() when the user selects option 1.
  * Iterates over the array of Employee structs and prints
  * each employee's name, salary and 6-digit ID number in
@@ -224,6 +232,7 @@ void print_employees(struct Employee *emps)
 
 /*
  * Add New Employee:
+ *
  * Adds a new employee to the array of Employee structs.
  * Calls the functions input_salary(), input_first_name()
  * and input_last_name() to store the user's input for
@@ -271,6 +280,23 @@ int add_new_employee(struct Employee *emps)
 	else return -1;
 }
 
+/*
+ * Edit Employee:
+ *
+ * Called once to begin editing an Employee's information.
+ * First searches for the Employee with ID input by user.
+ * If found, function first stores the original data values,
+ * then calls the recursive edit function which handles the
+ * editing and calls itself until the user decides to stop.
+ *
+ * If the user selects Save Changes, this function re-sorts
+ * the Employees in case the ID has changed, then returns 0.
+ * If the user selects Discard Changes, this function then
+ * restores the original values and returns -1.
+ *
+ * emps - pointer to the array of Employee structs
+ * returns -1 on search failure or discard changes, 0 otherwise
+ */
 int edit_employee(struct Employee *emps)
 {
 	int index = search_by_id(emps);
@@ -301,10 +327,30 @@ int edit_employee(struct Employee *emps)
 	return -1;
 }
 
+/*
+ * Recursive Edit Employee:
+ *
+ * Called first by edit_employee() function after finding
+ * the location of the Employee to be edited in memory.
+ * Continues to call itself recursively until the user is
+ * done editing.
+ *
+ * Calls print_edit_menu() to determine which field to edit.
+ * If the menu selection is between 1 and 4, this function
+ * then calls the appropriate input function and updates the
+ * corresponding value in memory. If the user selects Save Changes,
+ * the function returns 1 to the main edit function. If the user
+ * selects Discard Changes, the function asks for confirmation,
+ * and returns 0 if the user confirms.
+ *
+ * index - the location of the Employee to edit in the array
+ * emps - pointer to the array of Employee structs
+ * returns 1 on save changes, 0 on discard changes
+ */
 int rec_edit_employee(int index, struct Employee *emps)
 {
 	print_edit_menu();
-	switch(input_menu_selection())
+	switch(input_menu_selection(6))
 	{
 	case 1:
 		input_first_name(emps[index].firstName);
@@ -321,7 +367,9 @@ int rec_edit_employee(int index, struct Employee *emps)
 	case 5:
 		return 1;
 	case 6:
-		return 0;
+		printf("\n%s\n", "Are you sure you want to discard your changes?\n(1) Yes, discard my changes\n(2) No, go back to editing");
+		if (input_menu_selection(2) == 1)
+			return 0;
 	}
 	printf("\n%-32s %7s          %6s\n", "NAME", "SALARY", "ID");
 	printf("%s\n", "-----------------------------------------------------------");
@@ -330,6 +378,11 @@ int rec_edit_employee(int index, struct Employee *emps)
 	return rec_edit_employee(index, emps);
 }
 
+/*
+ * Print Edit Menu:
+ *
+ * Utility function, simply prints the edit employee menu.
+ */
 void print_edit_menu()
 {
 	printf("\n%s\n", "What would you like to do?");
@@ -345,6 +398,7 @@ void print_edit_menu()
 
 /*
  * Search by ID:
+ *
  * Calls input_id() to retrieve an employee ID to search for.
  * Performs a linear search of the array of Employee structs,
  * already sorted by ID, and prints the employee's info if a
@@ -384,6 +438,7 @@ int search_by_id(struct Employee *emps)
 
 /*
  * Input ID:
+ *
  * Prompts the user to enter a 6-digit employee ID to
  * search for. Validates user input, first to ensure
  * that input is an integer, and then to check that it
@@ -414,6 +469,7 @@ int input_id()
 
 /*
  * Search by Name:
+ *
  * Calls input_last_name() to retrieve a name to search for.
  * Performs a linear search of the array of Employee structs
  * and prints the employee's info if a match is found, or else
@@ -445,6 +501,7 @@ void search_by_name(struct Employee *emps)
 
 /*
  * Print All by Last Name:
+ *
  * Similar to search_by_name, but it does not stop as soon as
  * it finds an Employee with a matching name, but rather it
  * continues to search for and print any matches until the
@@ -481,6 +538,7 @@ void print_all_by_last_name(struct Employee *emps)
 
 /*
  * Input Last Name:
+ *
  * Prompts the user to enter a last name, and stores the input
  * string at the location provided, unless there is an error.
  *
@@ -500,6 +558,7 @@ int input_last_name(char name[MAX_NAME])
 
 /*
  * Input First Name:
+ *
  * Prompts the user to enter a first name, and stores the input
  * string at the location provided, unless there is an error.
  *
@@ -519,6 +578,7 @@ int input_first_name(char name[MAX_NAME])
 
 /*
  * Input Salary:
+ *
  * Prompts the user to enter a salary for a new employee.
  * Validates user input, first to ensure it is an integer,
  * and then to check that it is between 30000 and 150000.
@@ -543,6 +603,18 @@ int input_salary()
 	else return salary;
 }
 
+/*
+ * Print Top Salaries:
+ *
+ * Prints the top n Employees with the highest salaries.
+ * First sorts the array of Employees according to salary,
+ * then calls input_num() to determine how many to display.
+ * With the value of n input by the user, the function uses
+ * a simple for loop to print the first n Employees starting
+ * with the highest paid, then re-sorts the Employees by ID.
+ *
+ * emps - pointer to the array of Employee structs
+ */
 void print_top_salaries(struct Employee *emps)
 {
 	sort_employees(emps, SORT_SALARY);
@@ -558,6 +630,15 @@ void print_top_salaries(struct Employee *emps)
 	sort_employees(emps, SORT_ID);
 }
 
+/*
+ * Input Number (of Employees):
+ *
+ * Similar to input_id() of input_salary(), except input
+ * value must be an integer between 0 and nEmps, the global
+ * number of Employees currently stored in the database.
+ *
+ * returns a user input integer between 1 and nEmps
+ */
 int input_num()
 {
 	int num;
@@ -582,6 +663,7 @@ int input_num()
 
 /*
  * Sort Employees:
+ *
  * Called once by load_employees() once it has populated
  * the array of Employee structs. Simply calls qsort(),
  * passing it the array to sort, the number of elements.
@@ -604,6 +686,7 @@ void sort_employees(struct Employee *emps, int compareCode)
 
 /*
  * Employee ID Comparator:
+ *
  * Used by qsort() in sort_employees() to be used when
  * comparing any two Employee structs according to ID.
  *
@@ -627,6 +710,7 @@ int emp_id_comparator(const void *v1, const void *v2)
 
 /*
  * Employee Salary Comparator:
+ *
  * Used by qsort() in sort_employees() to be used when
  * comparing any two Employee structs according to salary.
  *

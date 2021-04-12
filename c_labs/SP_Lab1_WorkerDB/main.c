@@ -29,6 +29,7 @@ void print_employees(struct Employee*);
 void load_employees(struct Employee*);
 int add_new_employee(struct Employee*);
 int edit_employee(struct Employee*);
+int delete_employee(struct Employee*);
 int rec_edit_employee(int, struct Employee*);
 void main_menu(struct Employee*);
 void print_main_menu(void);
@@ -104,6 +105,9 @@ void main_menu(struct Employee *emps)
 		break;
 	case 5:
 		return;
+	case 6:
+		delete_employee(emps);
+		break;
 	case 7:
 		edit_employee(emps);
 		break;
@@ -278,6 +282,43 @@ int add_new_employee(struct Employee *emps)
 		return 0;
 	}
 	else return -1;
+}
+
+/*
+ * Delete Employee:
+ *
+ * First searches for the Employee with ID input by user.
+ * If found, confirms the user's intent to delete the employee.
+ * If confirmation is given, the function shifts all Employees
+ * with a larger index forward one position in the array,
+ * overwriting the deleted Employee and eventually replacing the
+ * last array element with 0 or null values from emps[nEmps + 1].
+ * Finally, the global nEmps value is decremented by 1.
+ *
+ * emps - pointer to the array of Employee structs
+ * returns -1 on search failure, 0 on cancel, 1 on delete success
+ */
+int delete_employee(struct Employee *emps)
+{
+	int index = search_by_id(emps);
+	if (index)
+	{
+		// Ask for confirmation from user
+		printf("%s%s %s%s\n", "Are you sure you want to delete ", emps[index].firstName, emps[index].lastName, " from the database?");
+		printf("%s\n%s\n", "(1) Yes, delete them", "(2) No, forget it");
+		if (input_menu_selection(2) == 2) return 0;
+		// Shift all remaining Employees forward in the array
+		do {
+			strcpy(emps[index].firstName, emps[index + 1].firstName);
+			strcpy(emps[index].lastName, emps[index + 1].lastName);
+			emps[index].id = emps[index + 1].id;
+			emps[index].salary = emps[index + 1].salary;
+			index++;
+		} while (emps[index].id != 0);
+		nEmps--;
+		return 1;
+	}
+	return -1;
 }
 
 /*

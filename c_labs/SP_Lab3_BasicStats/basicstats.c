@@ -76,12 +76,14 @@ int main(int argc, const char *argv[]) {
  * maxN - the maximum number of floats the array can store
  */
 void print_results(float *data, int n, int maxN) {
+	int unused = maxN - n;
+	float unusedPct = (float) unused / (float) maxN * 100.0;
 	printf(ANSI_COLOR_GREEN"%s"ANSI_COLOR_RESET":\n%s\n", "Results", "--------");
 	printf(ANSI_COLOR_GREEN"%4s"ANSI_COLOR_RESET"%7s"ANSI_COLOR_RED"%14d\n"ANSI_COLOR_RESET, "Num ", "values:", n);
 	printf("%11s"ANSI_COLOR_RED"%14.3f\n"ANSI_COLOR_RESET, "mean:", compute_mean(data, n));
 	printf("%11s"ANSI_COLOR_RED"%14.3f\n"ANSI_COLOR_RESET, "median:", compute_median(data, n));
 	printf("%11s"ANSI_COLOR_RED"%14.3f\n"ANSI_COLOR_RESET, "stddev:", compute_stddev(data, n));
-	printf(ANSI_COLOR_GREEN"%6s"ANSI_COLOR_RESET"%16s"ANSI_COLOR_RED"%d\n"ANSI_COLOR_RESET, "Unused"," array capacity: ", maxN - n);
+	printf(ANSI_COLOR_GREEN"%6s"ANSI_COLOR_RESET"%10s"ANSI_COLOR_RED"%d %s%.1f%s\n"ANSI_COLOR_RESET, "Unused"," capacity: ", unused, "(", unusedPct, "%)");
 }
 
 /*

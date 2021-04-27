@@ -53,6 +53,7 @@ int main(int argc, const char *argv[]) {
 	int maxN = 20;
 	float *data = malloc(maxN * sizeof(float));
 	load_data(data, maxN);
+	close_file();
 	return 0;
 }
 

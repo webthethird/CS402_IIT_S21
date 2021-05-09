@@ -6,8 +6,8 @@ public class multiplyMatrices {
 		long startTime = System.currentTimeMillis();
 		// set large values for n, m, and k
 		int n = 1500;
-		int m = 1000;
-		int k = 500;
+		int m = 5000;
+		int k = 2500;
 		
 		// instantiate A, B
 		int[][] A = new int[n][m];
@@ -57,17 +57,24 @@ public class multiplyMatrices {
 		// Create an array with same # rows as A & same # columns as B
 		int n = A.length;
 		int m = B.length;
-		int k = B[0].length;
-		int[][] C = new int[n][k];
+		int p = B[0].length;
+		int[][] C = new int[n][p];
 		// Calculate matrix values using dot product - requires a loop within a loop within a loop
-		// Modified for part b
-		for (int j = 0; j < k; j++) {
+//		for (int i = 0; i < n; i++) {
+//			for (int j = 0; j < p; j++) {
+//				int value = 0;
+//				for (int k = 0; k < m; k++) {
+//					value += A[i][k] * B[k][j];
+//				}
+//				C[i][j] = value;
+//			}
+//		}
+		for (int k = 0; k < m; k++) {
 			for (int i = 0; i < n; i++) {
-				int value = 0;
-				for (int h = 0; h < m; h++) {
-					value += A[i][h] * B[h][j];
+				int value = A[i][k];
+				for (int j = 0; j < p; j++) {
+					C[i][j] += value * B[k][j];
 				}
-				C[i][j] = value;
 			}
 		}
 		return C;
